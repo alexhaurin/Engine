@@ -6,14 +6,24 @@ Game::Game() {
 
 void Game::Run() {
 	
+	int counter = 1;
 	while (1) {
 		auto startTime = std::chrono::system_clock::now();
 		Update(1.0);
 		Draw();
 		HandleEvents();
 		auto endTime = std::chrono::system_clock::now();
-		double deltaTime = std::chrono::duration<double>(endTime - startTime).count();
-		std::cout << deltaTime << std::endl;
+
+		//Seconds between updates
+		deltaTime = std::chrono::duration<double, std::milli>(endTime - startTime).count() / 1000;
+
+		int x = (1000 / 60) - deltaTime;
+
+		//Test
+		std::cout << counter << std::endl;
+		counter++;
+
+		std::this_thread::sleep_for(std::chrono::milliseconds(x));
 	}
 }
 
