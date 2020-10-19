@@ -2,17 +2,18 @@
 #include <iostream>
 #include <chrono>
 #include <thread>
+#include <SFML/Graphics.hpp>
 
 class Game {
 public:
 	Game();
+	~Game();
+
 	void Run();
+	void HandleEvents();
 	void Update(double deltaTime);
 	void Draw();
-	void HandleEvents();
 
 public:
-	double deltaTime;
 	double fps;
-
 };
