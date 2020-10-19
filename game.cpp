@@ -2,29 +2,48 @@
 
 Game::Game() {
 
+	auto window = std::make_shared<sf::Window>();
+
+	std::cout << "Created" << std::endl;
+}
+
+Game::~Game() {
+
+	std::cout << "Destroyed" << std::endl;
+
 }
 
 void Game::Run() {
-	
-	int counter = 1;
+
+	auto targetTime = std::chrono::milliseconds(1000 / 60);
 	while (1) {
-		auto startTime = std::chrono::system_clock::now();
+		auto startTime = std::chrono::high_resolution_clock::now();
+		HandleEvents();
 		Update(1.0);
 		Draw();
-		HandleEvents();
-		auto endTime = std::chrono::system_clock::now();
+		auto endTime = std::chrono::high_resolution_clock::now();
+		auto deltaTime = startTime - endTime;
 
-		//Seconds between updates
-		deltaTime = std::chrono::duration<double, std::milli>(endTime - startTime).count() / 1000;
 
-		int x = (1000 / 60) - deltaTime;
+		if (deltaTime < targetTime) {
 
-		//Test
-		std::cout << counter << std::endl;
-		counter++;
+			auto remainingTime = targetTime - deltaTime - std::chrono::milliseconds(3);
+			if (remainingTime > std::chrono::milliseconds(0)) {
+				std::this_thread::sleep_for(remainingTime);
 
-		std::this_thread::sleep_for(std::chrono::milliseconds(x));
+				while ((std::chrono::high_resolution_clock::now() - startTime) < targetTime) {}
+			}
+		}
+
+		std::cout << std::chrono::duration<double, std::milli>(std::chrono::high_resolution_clock::now() - startTime).count() / 1000 << std::endl;
+
+
+
 	}
+}
+
+void Game::HandleEvents() {
+
 }
 
 void Game::Update(double dt) {
@@ -32,9 +51,5 @@ void Game::Update(double dt) {
 }
 
 void Game::Draw() {
-
-}
-
-void Game::HandleEvents() {
 
 }
