@@ -4,7 +4,8 @@
 #include <thread>
 #include <SFML/Graphics.hpp>
 
-class Game {
+class Game
+{
 public:
 	Game();
 	~Game();
@@ -16,4 +17,6 @@ public:
 
 public:
 	double fps;
+	std::shared_ptr<sf::RenderWindow> window;
+	sf::Sprite hoopla;
 };
