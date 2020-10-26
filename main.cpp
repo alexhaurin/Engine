@@ -1,5 +1,6 @@
 #include <memory>
 #include "game.h"
+#include "enemy.h"
 
 int main()
 {
