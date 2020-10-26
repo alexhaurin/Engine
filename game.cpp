@@ -4,13 +4,6 @@ Game::Game()
 {
 	window = std::make_shared<sf::RenderWindow>(sf::VideoMode(1200, 800), "Engine2");
 
-	auto texture = std::make_shared<sf::Texture>();
-	if (!texture->loadFromFile("/Users/Alex Haurin/Downloads/HD_Hoopla_Fish.jpg")) {
-		std::cout << "Failed to load hoopla" << std::endl;
-	}
-	sf::Sprite hoopla;
-	hoopla.setTexture(*texture);
-
 	std::cout << "Created" << std::endl;
 }
 
@@ -49,11 +42,11 @@ void Game::Run()
 
 void Game::HandleEvents()
 {
-	sf::Event evnt;
+	sf::Event event;
 
-	while (window->pollEvent(evnt))
+	while (window->pollEvent(event))
 	{
-		switch (evnt.type)
+		switch (event.type)
 		{
 		case sf::Event::Closed:
 			window->close();
@@ -71,8 +64,8 @@ void Game::Update(double dt)
 
 void Game::Draw()
 {
-	window->clear();
-	window->draw(hoopla);
-	window->display();
+	//window->clear();
+	//window->draw(hoopla);
+	//window->display();
 
 }
