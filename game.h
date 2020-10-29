@@ -1,8 +1,19 @@
 #pragma once
-#include <iostream>
+#include "enemy.h"
+#include "player.h"
 #include <chrono>
 #include <thread>
-#include <SFML/Graphics.hpp>
+
+class Input
+{
+public:
+	void Clear();
+
+	bool keyRightPressed;
+	bool keyLeftPressed;
+	bool keyUpPressed;
+	bool keyDownPressed;
+};
 
 class Game
 {
@@ -16,7 +27,10 @@ public:
 	void Draw();
 
 public:
-	double fps;
 	std::shared_ptr<sf::RenderWindow> window;
-	sf::Sprite hoopla;
+
+	Player player;
+	std::vector<Enemy> enemyList;
+	Input inputState;
+	bool inputBool;
 };
