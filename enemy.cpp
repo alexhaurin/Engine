@@ -1,34 +1,68 @@
 #include "enemy.h"
-	
-Enemy::Enemy(double r)
+#include "vector.h"
+
+Enemy::Enemy(float r, float x, float y)
 {
-	auto texture = std::make_shared<sf::Texture>();
-	if (!texture->loadFromFile("/Users/Alex Haurin/Downloads/HD_Hoopla_Fish.jpg")) {
+	if (!texture.loadFromFile("Images/BrickCircle.png")) {
 		std::cout << "Failed to load hoopla" << std::endl;
 	}
-	sf::Sprite hoopla;
-	hoopla.setTexture(*texture);
+	sprite.setTexture(texture);
+	sprite.setScale(sf::Vector2f(0.333f, 0.333f));
 
-	radius = r;
-	position = hoopla.getPosition();
+	position = GetPosition();
+	W = 225 / 3;
+	H = 225 / 3;
+
+	position.x = x;
+	position.y = y;
+	speed = 2.0f;
+
+	std::cout << "Enemy created" << std::endl;
 }
 
-void Enemy::Update()
+Enemy::~Enemy()
+{
+	std::cout << "Enemy destroyed" << std::endl;
+}
+
+void Enemy::Update(sf::Vector2f point)
+{
+	//Get position of sprite and offset it based on width
+	position = sprite.getPosition();
+	position.x += W / 2;
+	position.y += W / 2;
+
+	//Go to point given at certain speed
+	sf::Vector2f vectorToPoint(point.x - position.x, point.y - position.y);
+	sf::Vector2f movement = vector::normalize(vectorToPoint);
+	sprite.move(movement.x * speed, movement.y * speed);
+}
+
+void Enemy::Draw()
 {
 
 }
 
-bool Enemy::collisionCheck()
+sf::Sprite Enemy::GetSprite()
 {
-	sf::Vector2f object;
-	double distance;
-	distance = sqrt(pow(object.x - position.x, 2) + pow(object.y - position.y, 2));
+	return sprite;
+}
 
-	if (distance > radius)
-	{
-		return false;
-	}
-	else {
-		return true;
-	}
+sf::Vector2f Enemy::GetPosition()
+{
+	sf::Vector2f position = sprite.getPosition();
+	position.x += W / 2;
+	position.y += H / 2;
+
+	return position;
+}
+
+float Enemy::GetWidth()
+{
+	return W;
+}
+
+float Enemy::GetHeight()
+{
+	return H;
 }
