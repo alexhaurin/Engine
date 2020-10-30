@@ -7,6 +7,8 @@ Game::Game()
 	Enemy enemy1(100.0, 100.0, 100.0);
 	enemyList.push_back(enemy1);
 
+	player.Shoot();
+
 	std::cout << "Game created" << std::endl;
 }
 
@@ -45,7 +47,6 @@ void Game::HandleEvents()
 {
 	sf::Event event;
 
-	inputState.Clear();
 	while (window->pollEvent(event))
 	{
 		switch (event.type)
@@ -57,44 +58,9 @@ void Game::HandleEvents()
 			break;
 		case sf::Event::KeyPressed:
 			inputBool = true;
-
-			//Inputs
-			if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
-			{
-				std::cout << "pressed" << std::endl;
-				inputState.keyUpPressed = true;
-			}
-			else
-			{
-				inputState.keyUpPressed = false;
-			}
-
-			if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
-			{
-				inputState.keyLeftPressed = true;
-			}
-			else
-			{
-				inputState.keyLeftPressed = false;
-			}
-
-			if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
-			{
-				inputState.keyDownPressed = true;
-			}
-			else
-			{
-				inputState.keyDownPressed = false;
-			}
-
-			if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
-			{
-				inputState.keyRightPressed = true;
-			}
-			else
-			{
-				inputState.keyRightPressed = false;
-			}
+			inputState.checkKeyboardInputs();
+		case sf::Event::KeyReleased:
+			inputState.checkKeyboardInputs();
 		}
 	}
 }
@@ -103,16 +69,18 @@ void Game::Update(double dt)
 {
 	player.Update();
 	player.CheckCollisions(enemyList);
+	for (unsigned int i = 0; i < player.bulletList.size(); i++) {
+		player.bulletList[i].Update();
+	}
 	for (unsigned int i = 0; i < enemyList.size(); i++) {
 		enemyList[i].Update(player.GetPosition());
 	}
 
 	//Inputs
 	if (inputState.keyUpPressed) {
-		std::cout << "moved" << std::endl;
 		player.sprite.move(0, -player.speed);
 	}
-	if (inputState.keyLeftPressed) {
+	else if (inputState.keyLeftPressed) {
 		player.sprite.move(-player.speed, 0);
 	}
 	else if (inputState.keyDownPressed) {
@@ -127,23 +95,53 @@ void Game::Draw()
 {
 	window->clear();
 
-	window->draw(player.GetSprite());
-	for (unsigned int i = 0; i < enemyList.size(); i++) {
-		window->draw(enemyList[i].GetSprite());
+	player.Draw(window);
+	for (unsigned int i = 0; i < player.bulletList.size(); i++) {
+		player.bulletList[i].Draw(window);
+		std::cout << player.bulletList[i].GetPosition().x << ", " << player.bulletList[i].GetPosition().x << std::endl;
 	}
-
-	/*player.Draw();
 	for (unsigned int i = 0; i < enemyList.size(); i++) {
-		enemyList[i].Draw();
-	}*/
+		enemyList[i].Draw(window);
+	}
 
 	window->display();
 }
 
-void Input::Clear()
+void Input::checkKeyboardInputs()
 {
-	keyUpPressed = false;
-	keyDownPressed = false;
-	keyRightPressed = false;
-	keyLeftPressed = false;
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
+	{
+		keyUpPressed = true;
+	}
+	else
+	{
+		keyUpPressed = false;
+	}
+
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
+	{
+		keyLeftPressed = true;
+	}
+	else
+	{
+		keyLeftPressed = false;
+	}
+
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
+	{
+		keyDownPressed = true;
+	}
+	else
+	{
+		keyDownPressed = false;
+	}
+
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
+	{
+		keyRightPressed = true;
+	}
+	else
+	{
+		keyRightPressed = false;
+	}
 }
