@@ -27,9 +27,9 @@ void Player::Update()
 	position = sprite.getPosition();
 }
 
-void Player::Draw()
+void Player::Draw(std::shared_ptr<sf::RenderWindow> window)
 {
-	std::cout << "draw" << std::endl;
+	window->draw(sprite);
 }
 
 bool Player::CheckCollisions(std::vector<Enemy>& enemyList)
@@ -38,18 +38,22 @@ bool Player::CheckCollisions(std::vector<Enemy>& enemyList)
 		sf::Vector2f vector(position.x - enemyList[i].GetPosition().x, position.y - enemyList[i].GetPosition().y);
 		float vectorMagnitude = sqrt(pow(vector.x, 2) + pow(vector.y, 2));
 
-		if (vectorMagnitude >= enemyList[i].GetWidth()/2 + W/2) { return false; }
-		else { return true; }
+		if (vectorMagnitude >= enemyList[i].GetWidth()/2 + W/2)
+		{
+			return false;
+		}
+		else
+		{
+			return true;
+		}
 	}
 }
 
 void Player::Shoot() {
-	std::cout << "shoot" << std::endl;
-}
+	Bullet bullet(position.x, position.y);
+	bulletList.push_back(bullet);
 
-sf::Sprite Player::GetSprite()
-{
-	return sprite;
+	std::cout << "shoot" << std::endl;
 }
 
 sf::Vector2f Player::GetPosition()
@@ -59,6 +63,11 @@ sf::Vector2f Player::GetPosition()
 	position.y += H / 2;
 
 	return position;
+}
+
+sf::Sprite Player::GetSprite()
+{
+	return sprite;
 }
 
 float Player::GetSpeed()
@@ -74,4 +83,53 @@ float Player::GetWidth()
 float Player::GetHeight()
 {
 	return H;
+}
+
+///////////////////////////////////////////////////
+///////////////////////////////////////////////////
+//                Bullet                         //
+///////////////////////////////////////////////////
+///////////////////////////////////////////////////
+
+Bullet::Bullet(float x, float y)
+{
+	//Set up sprite with proper scale and width/height
+	if (!texture.loadFromFile("Images/HooplaCircle.png")) {
+		std::cout << "Failed to load hoopla" << std::endl;
+	}
+	sprite.setTexture(texture);
+	sprite.setScale(sf::Vector2f(0.2f, 0.2f));
+	sprite.setPosition(x, y);
+
+	position = GetPosition();
+	W = 543 / 5;
+	H = 543 / 5;
+
+	std::cout << "Bullet Created" << std::endl;
+}
+
+Bullet::~Bullet()
+{
+	std::cout << "Bullet Destroyed" << std::endl;
+}
+
+void Bullet::Update()
+{
+	position = sprite.getPosition();
+	sprite.move(speed, 0);
+}
+
+void Bullet::Draw(std::shared_ptr<sf::RenderWindow> window)
+{
+	window->draw(sprite);
+}
+
+sf::Vector2f Bullet::GetPosition()
+{
+	return sprite.getPosition();
+}
+
+float Bullet::GetSpeed()
+{
+	return speed;
 }
