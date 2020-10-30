@@ -7,12 +7,12 @@
 class Input
 {
 public:
-	void Clear();
+	void checkKeyboardInputs();
 
-	bool keyRightPressed;
-	bool keyLeftPressed;
-	bool keyUpPressed;
-	bool keyDownPressed;
+	bool keyRightPressed = false;
+	bool keyLeftPressed = false;
+	bool keyUpPressed = false;
+	bool keyDownPressed = false;
 };
 
 class Game
