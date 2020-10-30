@@ -1,13 +1,14 @@
 #include "enemy.h"
 #include "vector.h"
 
-Enemy::Enemy(float r, float x, float y)
+Enemy::Enemy(float x, float y, float r)
 {
 	if (!texture.loadFromFile("Images/BrickCircle.png")) {
 		std::cout << "Failed to load hoopla" << std::endl;
 	}
 	sprite.setTexture(texture);
 	sprite.setScale(sf::Vector2f(0.333f, 0.333f));
+	sprite.setPosition(x, y);
 
 	position = GetPosition();
 	W = 225 / 3;
@@ -38,9 +39,9 @@ void Enemy::Update(sf::Vector2f point)
 	sprite.move(movement.x * speed, movement.y * speed);
 }
 
-void Enemy::Draw()
+void Enemy::Draw(std::shared_ptr<sf::RenderWindow> window)
 {
-
+	window->draw(sprite);
 }
 
 sf::Sprite Enemy::GetSprite()
