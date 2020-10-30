@@ -5,10 +5,10 @@
 
 class Enemy {
 public:
-	Enemy(float r, float x, float y);
+	Enemy(float x, float y, float r);
 	~Enemy();
 	void Update(sf::Vector2f point);
-	void Draw();
+	void Draw(std::shared_ptr<sf::RenderWindow> window);
 
 	sf::Sprite GetSprite();
 	sf::Vector2f GetPosition();
