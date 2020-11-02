@@ -4,23 +4,20 @@
 Enemy::Enemy(float x, float y, float r)
 {
 	if (!texture.loadFromFile("Images/BrickCircle.png")) {
-		std::cout << "Failed to load hoopla" << std::endl;
+		std::cout << "Failed to load brick" << std::endl;
 	}
 	sprite.setTexture(texture);
-	sprite.setScale(sf::Vector2f(0.333f, 0.333f));
+	sprite.setScale(sf::Vector2f(1.0f, 1.0f));
 	sprite.setPosition(x, y);
 
+	W = texture.getSize().x * sprite.getScale().x;
+	H = texture.getSize().y * sprite.getScale().y;
 	position = GetPosition();
-	W = 225 / 3;
-	H = 225 / 3;
-
-	position.x = x;
-	position.y = y;
 	speed = 2.0f;
 
 	std::cout << "Enemy created" << std::endl;
 }
-
+	
 Enemy::~Enemy()
 {
 	std::cout << "Enemy destroyed" << std::endl;
@@ -29,9 +26,7 @@ Enemy::~Enemy()
 void Enemy::Update(sf::Vector2f point)
 {
 	//Get position of sprite and offset it based on width
-	position = sprite.getPosition();
-	position.x += W / 2;
-	position.y += W / 2;
+	position = GetPosition();
 
 	//Go to point given at certain speed
 	sf::Vector2f vectorToPoint(point.x - position.x, point.y - position.y);
@@ -51,11 +46,11 @@ sf::Sprite Enemy::GetSprite()
 
 sf::Vector2f Enemy::GetPosition()
 {
-	sf::Vector2f position = sprite.getPosition();
-	position.x += W / 2;
-	position.y += H / 2;
+	sf::Vector2f p = sprite.getPosition();
+	p.x += W / 2;
+	p.y += H / 2;
 
-	return position;
+	return p;
 }
 
 float Enemy::GetWidth()
