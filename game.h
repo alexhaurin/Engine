@@ -7,12 +7,14 @@
 class Input
 {
 public:
+	void clearInputs();
 	void checkKeyboardInputs();
 
 	bool keyRightPressed = false;
 	bool keyLeftPressed = false;
 	bool keyUpPressed = false;
 	bool keyDownPressed = false;
+	bool keySpacePressed = false;
 };
 
 class Game
@@ -30,7 +32,7 @@ public:
 	std::shared_ptr<sf::RenderWindow> window;
 
 	Player player;
-	std::vector<Enemy> enemyList;
+	std::vector<std::shared_ptr<Enemy>> enemyList;
 	Input inputState;
 	bool inputBool;
 };
