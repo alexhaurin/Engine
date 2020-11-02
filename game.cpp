@@ -4,7 +4,7 @@ Game::Game()
 {
 	window = std::make_shared<sf::RenderWindow>(sf::VideoMode(1200, 800), "Engine2");
 
-	Enemy enemy1(100.0, 100.0, 100.0);
+	std::shared_ptr<Enemy> enemy1 = std::make_shared<Enemy>(100.0, 100.0, 100.0);
 	enemyList.push_back(enemy1);
 
 	player.Shoot();
@@ -39,7 +39,7 @@ void Game::Run()
 				while ((std::chrono::high_resolution_clock::now() - startTime) < targetTime) {}
 			}
 		}
-		//std::cout << std::chrono::duration<double, std::milli>(std::chrono::high_resolution_clock::now() - startTime).count() / 1000 << std::endl;
+	//	std::cout << std::chrono::duration<double, std::milli>(std::chrono::high_resolution_clock::now() - startTime).count() / 1000 << std::endl;
 	}
 }
 
@@ -64,84 +64,99 @@ void Game::HandleEvents()
 		}
 	}
 }
+sf::Vector2f normalize(sf::Vector2f& vector)
+{
+	if (vector.x * vector.y == 0) {
+		return vector;
+	}
+
+	float vectorMag = sqrt(pow(vector.x, 2) + pow(vector.y, 2));
+	sf::Vector2f normalizedVector(vector.x / vectorMag, vector.y / vectorMag);
+
+	return normalizedVector;
+}
 
 void Game::Update(double dt)
 {
 	player.Update();
 	player.CheckCollisions(enemyList);
 	for (unsigned int i = 0; i < player.bulletList.size(); i++) {
-		player.bulletList[i].Update();
+		player.bulletList[i]->Update();
 	}
 	for (unsigned int i = 0; i < enemyList.size(); i++) {
-		enemyList[i].Update(player.GetPosition());
+		enemyList[i]->Update(player.GetPosition());
+	}
+
+	if (inputState.keySpacePressed) {
+		player.Shoot();
 	}
 
 	//Inputs
 	if (inputState.keyUpPressed) {
-		player.sprite.move(0, -player.speed);
+		player.direction += sf::Vector2f(0, -1);
 	}
-	else if (inputState.keyLeftPressed) {
-		player.sprite.move(-player.speed, 0);
+	if (inputState.keyLeftPressed) {
+		player.direction += sf::Vector2f(-1, 0);
 	}
-	else if (inputState.keyDownPressed) {
-		player.sprite.move(0, player.speed);
+	if (inputState.keyDownPressed) {
+		player.direction += sf::Vector2f(0, 1);
 	}
-	else if (inputState.keyRightPressed) {
-		player.sprite.move(player.speed, 0);
+	if (inputState.keyRightPressed) {
+		player.direction += sf::Vector2f(1, 0);
 	}
+
+	player.sprite.move(normalize(player.direction) * player.speed);
 }
 
 void Game::Draw()
 {
 	window->clear();
 
-	player.Draw(window);
 	for (unsigned int i = 0; i < player.bulletList.size(); i++) {
-		player.bulletList[i].Draw(window);
-		std::cout << player.bulletList[i].GetPosition().x << ", " << player.bulletList[i].GetPosition().x << std::endl;
+		player.bulletList[i]->Draw(window);
 	}
+	player.Draw(window);
 	for (unsigned int i = 0; i < enemyList.size(); i++) {
-		enemyList[i].Draw(window);
+		enemyList[i]->Draw(window);
 	}
 
 	window->display();
 }
 
+void Input::clearInputs()
+{
+	keyUpPressed = false;
+	keyLeftPressed = false;
+	keyDownPressed = false;
+	keyRightPressed = false;
+	keySpacePressed = false;
+}
+
 void Input::checkKeyboardInputs()
 {
+	clearInputs();
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
 	{
 		keyUpPressed = true;
-	}
-	else
-	{
-		keyUpPressed = false;
 	}
 
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::A))
 	{
 		keyLeftPressed = true;
 	}
-	else
-	{
-		keyLeftPressed = false;
-	}
 
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::S))
 	{
 		keyDownPressed = true;
-	}
-	else
-	{
-		keyDownPressed = false;
 	}
 
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::D))
 	{
 		keyRightPressed = true;
 	}
-	else
+
+	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
 	{
-		keyRightPressed = false;
+		keySpacePressed = true;
 	}
 }
