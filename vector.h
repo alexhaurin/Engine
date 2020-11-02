@@ -1,3 +1,4 @@
+#include <iostream>
 #include <SFML/Graphics.hpp>
 
 namespace vector {
@@ -5,8 +6,7 @@ namespace vector {
 	sf::Vector2f normalize(sf::Vector2f& vector)
 	{
 		if (vector.x * vector.y == 0) {
-			std::cout << "0" << std::endl;
-			return sf::Vector2f(1, 1);
+			return vector;
 		}
 
 		float vectorMag = sqrt(pow(vector.x, 2) + pow(vector.y, 2));
