@@ -1,5 +1,4 @@
 #include "enemy.h"
-#include "vector.h"
 
 Enemy::Enemy(float x, float y, float r)
 {
@@ -30,7 +29,7 @@ void Enemy::Update(sf::Vector2f point)
 
 	//Go to point given at certain speed
 	sf::Vector2f vectorToPoint(point.x - position.x, point.y - position.y);
-	sf::Vector2f movement = vector::normalize(vectorToPoint);
+	sf::Vector2f movement = Normalize(vectorToPoint);
 	sprite.move(movement.x * speed, movement.y * speed);
 }
 
@@ -39,7 +38,35 @@ void Enemy::Draw(std::shared_ptr<sf::RenderWindow> window)
 	window->draw(sprite);
 }
 
-sf::Sprite Enemy::GetSprite()
+bool Enemy::CheckBulletCollisions(std::shared_ptr<Bullet> bullet)
+{
+	sf::Vector2f vector(position.x - bullet->GetPosition().x, position.y - bullet->GetPosition().y);
+	float vectorMagnitude = sqrt(pow(vector.x, 2) + pow(vector.y, 2));
+
+	if (vectorMagnitude >= bullet->GetDimensions().x / 2 + W / 2)
+	{
+		return false;
+	}
+	else
+	{
+		std::cout << "hit" << std::endl;
+		return true;
+	}
+}
+
+sf::Vector2f Enemy::Normalize(sf::Vector2f& vector)
+{
+	if (vector.x * vector.y == 0) {
+		return vector;
+	}
+
+	float vectorMag = sqrt(pow(vector.x, 2) + pow(vector.y, 2));
+	sf::Vector2f normalizedVector(vector.x / vectorMag, vector.y / vectorMag);
+
+	return normalizedVector;
+}
+
+sf::Sprite Enemy::GetSprite() const
 {
 	return sprite;
 }
@@ -53,12 +80,7 @@ sf::Vector2f Enemy::GetPosition()
 	return p;
 }
 
-float Enemy::GetWidth()
+sf::Vector2f Enemy::GetDimensions() const
 {
-	return W;
-}
-
-float Enemy::GetHeight()
-{
-	return H;
+	return sf::Vector2f(W, H);
 }
