@@ -1,5 +1,4 @@
 #pragma once
-//#include "vector.h"
 #include <iostream>
 #include <SFML/Graphics.hpp>
 
@@ -12,6 +11,7 @@ public:
 	void Draw(std::shared_ptr<sf::RenderWindow> window);
 
 	sf::Vector2f GetPosition();
+	sf::Vector2f GetDimensions() const;
 
 private:
 	sf::Sprite sprite;
