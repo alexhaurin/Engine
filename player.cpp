@@ -35,13 +35,18 @@ void Player::Draw(std::shared_ptr<sf::RenderWindow> window)
 	window->draw(sprite);
 }
 
-bool Player::CheckCollisions(std::vector<std::shared_ptr<Enemy>> enemyList)
+void Player::Move(sf::Vector2f direction)
+{
+	sprite.move(Normalize(direction) * speed);
+}
+
+bool Player::CheckEnemyCollisions(std::vector<std::shared_ptr<Enemy>> enemyList)
 {
 	for (unsigned int i = 0; i < enemyList.size(); i++) {
 		sf::Vector2f vector(position.x - enemyList[i]->GetPosition().x, position.y - enemyList[i]->GetPosition().y);
 		float vectorMagnitude = sqrt(pow(vector.x, 2) + pow(vector.y, 2));
 
-		if (vectorMagnitude >= enemyList[i]->GetWidth()/2 + W/2)
+		if (vectorMagnitude >= enemyList[i]->GetDimensions().x/2 + W/2)
 		{
 			return false;
 		}
@@ -52,10 +57,21 @@ bool Player::CheckCollisions(std::vector<std::shared_ptr<Enemy>> enemyList)
 	}
 }
 
-void Player::Shoot() {
-	std::cout << pastDirection.x << ", " << pastDirection.y << std::endl;
+std::shared_ptr<Bullet> Player::Shoot() {
 	std::shared_ptr<Bullet> bullet = std::make_shared<Bullet>(position.x, position.y, pastDirection);
-	bulletList.push_back(bullet);
+	return bullet;
+}
+
+sf::Vector2f Player::Normalize(sf::Vector2f& vector)
+{
+	if (vector.x * vector.y == 0) {
+		return vector;
+	}
+
+	float vectorMag = sqrt(pow(vector.x, 2) + pow(vector.y, 2));
+	sf::Vector2f normalizedVector(vector.x / vectorMag, vector.y / vectorMag);
+
+	return normalizedVector;
 }
 
 sf::Vector2f Player::GetPosition()
@@ -65,4 +81,9 @@ sf::Vector2f Player::GetPosition()
 	p.y += H / 2;
 
 	return p;
+}
+
+float Player::GetSpeed() const
+{
+	return speed;
 }
