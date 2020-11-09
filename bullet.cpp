@@ -7,11 +7,11 @@ Bullet::Bullet(float x, float y, sf::Vector2f d)
 	}
 	sprite.setTexture(texture);
 	sprite.setScale(sf::Vector2f(0.2f, 0.2f));
-	sprite.setPosition(x, y);
 
 	speed = 30.0f;
 	W = texture.getSize().x * sprite.getScale().x;
 	H = texture.getSize().y * sprite.getScale().y;
+	sprite.setPosition(x - (W / 2), y - (H / 2));
 	position = GetPosition();
 	direction = d;
 
@@ -41,4 +41,9 @@ sf::Vector2f Bullet::GetPosition()
 	p.y += H / 2;
 
 	return p;
+}
+
+sf::Vector2f Bullet::GetDimensions() const
+{
+	return sf::Vector2f(W, H);
 }
