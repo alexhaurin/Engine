@@ -7,8 +7,6 @@ Game::Game()
 	std::shared_ptr<Enemy> enemy1 = std::make_shared<Enemy>(100.0, 100.0, 100.0);
 	enemyList.push_back(enemy1);
 
-	player.Shoot();
-
 	std::cout << "Game created" << std::endl;
 }
 
@@ -39,7 +37,7 @@ void Game::Run()
 				while ((std::chrono::high_resolution_clock::now() - startTime) < targetTime) {}
 			}
 		}
-	//	std::cout << std::chrono::duration<double, std::milli>(std::chrono::high_resolution_clock::now() - startTime).count() / 1000 << std::endl;
+		//std::cout << std::chrono::duration<double, std::milli>(std::chrono::high_resolution_clock::now() - startTime).count() / 1000 << std::endl;
 	}
 }
 
@@ -54,44 +52,46 @@ void Game::HandleEvents()
 		case sf::Event::Closed:
 			window->close();
 			break;
-		case sf::Event::Resized:
+		case sf::Event::Resized:	
 			break;
 		case sf::Event::KeyPressed:
 			inputBool = true;
-			inputState.checkKeyboardInputs();
+			inputState.CheckKeyboardInputs();
 		case sf::Event::KeyReleased:
-			inputState.checkKeyboardInputs();
+			inputState.CheckKeyboardInputs();
 		}
 	}
-}
-sf::Vector2f normalize(sf::Vector2f& vector)
-{
-	if (vector.x * vector.y == 0) {
-		return vector;
-	}
-
-	float vectorMag = sqrt(pow(vector.x, 2) + pow(vector.y, 2));
-	sf::Vector2f normalizedVector(vector.x / vectorMag, vector.y / vectorMag);
-
-	return normalizedVector;
 }
 
 void Game::Update(double dt)
 {
+	//Update
 	player.Update();
-	player.CheckCollisions(enemyList);
-	for (unsigned int i = 0; i < player.bulletList.size(); i++) {
-		player.bulletList[i]->Update();
+	for (unsigned int i = 0; i < bulletList.size(); i++) {
+		bulletList[i]->Update();
 	}
 	for (unsigned int i = 0; i < enemyList.size(); i++) {
 		enemyList[i]->Update(player.GetPosition());
 	}
 
-	if (inputState.keySpacePressed) {
-		player.Shoot();
+	//Detect Collisions
+	player.CheckEnemyCollisions(enemyList);
+	for (unsigned int i = 0; i < enemyList.size(); i++) {
+		for (unsigned int j = 0; j < bulletList.size(); j++) {
+			if (enemyList[i]->CheckBulletCollisions(bulletList[j]))
+			{
+				enemyDestroyList.push_back(enemyList[i]);
+				bulletDestroyList.push_back(bulletList[j]);
+			}
+		}
 	}
 
+
 	//Inputs
+	if (inputState.keySpacePressed) {
+		bulletList.push_back(player.Shoot());
+	}
+
 	if (inputState.keyUpPressed) {
 		player.direction += sf::Vector2f(0, -1);
 	}
@@ -105,17 +105,17 @@ void Game::Update(double dt)
 		player.direction += sf::Vector2f(1, 0);
 	}
 
-	player.sprite.move(normalize(player.direction) * player.speed);
+	player.Move(player.direction);
 }
 
 void Game::Draw()
 {
 	window->clear();
 
-	for (unsigned int i = 0; i < player.bulletList.size(); i++) {
-		player.bulletList[i]->Draw(window);
-	}
 	player.Draw(window);
+	for (unsigned int i = 0; i < bulletList.size(); i++) {
+		bulletList[i]->Draw(window);
+	}
 	for (unsigned int i = 0; i < enemyList.size(); i++) {
 		enemyList[i]->Draw(window);
 	}
@@ -123,7 +123,7 @@ void Game::Draw()
 	window->display();
 }
 
-void Input::clearInputs()
+void Input::ClearInputs()
 {
 	keyUpPressed = false;
 	keyLeftPressed = false;
@@ -132,9 +132,9 @@ void Input::clearInputs()
 	keySpacePressed = false;
 }
 
-void Input::checkKeyboardInputs()
+void Input::CheckKeyboardInputs()
 {
-	clearInputs();
+	ClearInputs();
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::W))
 	{
 		keyUpPressed = true;
