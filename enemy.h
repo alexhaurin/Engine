@@ -1,4 +1,5 @@
 #pragma once
+#include "bullet.h"
 #include <math.h>
 #include <iostream>
 #include <SFML/Graphics.hpp>
@@ -9,11 +10,12 @@ public:
 	~Enemy();
 	void Update(sf::Vector2f point);
 	void Draw(std::shared_ptr<sf::RenderWindow> window);
-
-	sf::Sprite GetSprite();
+	bool CheckBulletCollisions(std::shared_ptr<Bullet> bullet);
+	sf::Vector2f Normalize(sf::Vector2f& vector);
+	
 	sf::Vector2f GetPosition();
-	float GetWidth();
-	float GetHeight();
+	sf::Sprite GetSprite() const;
+	sf::Vector2f GetDimensions() const;
 
 private:
 	sf::Texture texture;
