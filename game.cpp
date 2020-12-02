@@ -2,10 +2,38 @@
 
 Game::Game()
 {
-	window = std::make_shared<sf::RenderWindow>(sf::VideoMode(1200, 800), "Engine2");
+	dimensions = sf::Vector2i(1200, 800);
+	window = std::make_shared<sf::RenderWindow>(sf::VideoMode(dimensions.x, dimensions.y), "Engine2");
 
-	std::shared_ptr<Enemy> enemy1 = std::make_shared<Enemy>(100.0, 100.0, 100.0);
+	//Load
+	if (!robotoFont.loadFromFile("Roboto-Bold.ttf")) {
+		std::cout << "Failed to font" << std::endl;
+	}
+
+	sf::Texture playerTexture;
+	if (!playerTexture.loadFromFile("Images/HooplaCircle.png")) {
+		std::cout << "Failed to load hoopla" << std::endl;
+	}
+	sf::Texture enemyTexture;
+	if (!enemyTexture.loadFromFile("Images/BrickCircle.png")) {
+		std::cout << "Failed to load brick" << std::endl;
+	}
+
+	//Spawn
+	root = Object::SpawnRoot<Entity>();
+	player = Object::Spawn<Player>(root, playerTexture, 100.0f, sf::Vector2f(100, 100));
+	std::shared_ptr<Enemy> enemy1 = Object::Spawn<Enemy>(root, enemyTexture, 100.0f, sf::Vector2f(0, 0));
+	std::shared_ptr<Enemy> enemy2 = Object::Spawn<Enemy>(root, enemyTexture, 100.0f, sf::Vector2f(500, 500));
+
+	//Push
 	enemyList.push_back(enemy1);
+	enemyList.push_back(enemy2);
+
+	entityList.push_back(player);
+	for (auto enemy : enemyList)
+	{
+		entityList.push_back(enemy);
+	}
 
 	std::cout << "Game created" << std::endl;
 }
@@ -66,63 +94,116 @@ void Game::HandleEvents()
 void Game::Update(double dt)
 {
 	//Update
-	player.Update();
-	for (unsigned int i = 0; i < bulletList.size(); i++) {
-		bulletList[i]->Update();
-	}
-	for (unsigned int i = 0; i < enemyList.size(); i++) {
-		enemyList[i]->Update(player.GetPosition());
+	root->Update();
+	player->Update();
+	for (auto entity : entityList)
+	{
+		entity->Update();
 	}
 
+	color[0] = 0;
+	color[1] = 255;
+
+	//Check if out of screen
+	if (!player->CheckRectCollisions(sf::Vector2f(dimensions.x / 2.0f, dimensions.y / 2.0f), sf::Vector2f(dimensions.x, dimensions.y)))
+	{
+		//Loop around
+		if (player->GetPastDirection().x > 0)
+		{
+			player->SetPosition(sf::Vector2f(0 - (player->GetDimensions().x / 2), player->GetPosition().y));
+		}
+		else if (player->GetPastDirection().x < 0) {
+			player->SetPosition(sf::Vector2f(dimensions.x + (player->GetDimensions().x / 2), player->GetPosition().y));
+		}
+
+		if (player->GetPastDirection().y < 0)
+		{
+			player->SetPosition(sf::Vector2f(player->GetPosition().x, dimensions.y + (player->GetDimensions().y / 2)));
+		}
+		else if (player->GetPastDirection().y > 0) {
+			player->SetPosition(sf::Vector2f(player->GetPosition().x, 0 - (player->GetDimensions().y / 2)));
+		}
+	}
+
+	//std::cout << enemyList[0]->GetPosition().x << ", " << enemyList[0]->GetPosition().y << std::endl;
+
 	//Detect Collisions
-	player.CheckEnemyCollisions(enemyList);
-	for (unsigned int i = 0; i < enemyList.size(); i++) {
-		for (unsigned int j = 0; j < bulletList.size(); j++) {
-			if (enemyList[i]->CheckBulletCollisions(bulletList[j]))
+	for (auto enemy : enemyList)
+	{
+		sf::Vector2f point = player->GetPosition();
+		sf::Vector2f vectorToPoint(point.x - enemy->GetPosition().x, point.y - enemy->GetPosition().y);
+		sf::Vector2f movement = enemy->Normalize(vectorToPoint);
+		enemy->Move(movement);
+
+		if (player->CheckCircleCollisions(enemy->GetPosition(), enemy->GetDimensions().x / 2))
+		{
+			color[0] = 255;
+			color[1] = 0;
+		}
+	}
+
+	for (std::shared_ptr<Enemy> enemy : enemyList)
+	{
+		for (std::shared_ptr<Bullet> bullet : bulletList)
+		{
+			if (enemy->CheckCircleCollisions(bullet->GetPosition(), bullet->GetDimensions().x))
 			{
-				enemyDestroyList.push_back(enemyList[i]);
-				bulletDestroyList.push_back(bulletList[j]);
+				color[2] = 200;
+
+				enemyDestroyList.push_back(enemy);
+				bulletDestroyList.push_back(bullet);
+			}
+			else {
+				color[2] = 0;
 			}
 		}
 	}
 
-
 	//Inputs
-	if (inputState.keySpacePressed) {
-		bulletList.push_back(player.Shoot());
+	if (inputState.keySpacePressed)
+	{
+		auto bullet = (player->Shoot());
+		bulletList.push_back(bullet);
+		entityList.push_back(bullet);
 	}
 
-	if (inputState.keyUpPressed) {
-		player.direction += sf::Vector2f(0, -1);
+	if (inputState.keyUpPressed)
+	{
+		player->direction += sf::Vector2f(0, -1);
 	}
 	if (inputState.keyLeftPressed) {
-		player.direction += sf::Vector2f(-1, 0);
+		player->direction += sf::Vector2f(-1, 0);
 	}
 	if (inputState.keyDownPressed) {
-		player.direction += sf::Vector2f(0, 1);
+		player->direction += sf::Vector2f(0, 1);
 	}
 	if (inputState.keyRightPressed) {
-		player.direction += sf::Vector2f(1, 0);
+		player->direction += sf::Vector2f(1, 0);
 	}
 
-	player.Move(player.direction);
+	player->Move(player->direction);
 }
 
 void Game::Draw()
 {
-	window->clear();
+	window->clear(sf::Color(color[0], color[1], color[2]));
 
-	player.Draw(window);
-	for (unsigned int i = 0; i < bulletList.size(); i++) {
-		bulletList[i]->Draw(window);
-	}
-	for (unsigned int i = 0; i < enemyList.size(); i++) {
-		enemyList[i]->Draw(window);
+	//Text
+	sf::Text text("text", robotoFont, 50);
+	text.setPosition(700, 700);
+
+	window->draw(text);
+
+	//Entities
+	for (auto entity : entityList)
+	{
+		entity->Draw(window);
 	}
 
 	window->display();
 }
 
+////////////////////Input Class///////////////////
 void Input::ClearInputs()
 {
 	keyUpPressed = false;
