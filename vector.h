@@ -1,17 +1,37 @@
+#pragma once
 #include <iostream>
-#include <SFML/Graphics.hpp>
+#include <vector>
+#include <memory>
 
-namespace vector {
-
-	sf::Vector2f normalize(sf::Vector2f& vector)
+namespace Vector
+{
+	//Returns vector with first item of a given value erased
+	template<typename tItemType>
+	std::vector<tItemType> EraseItemValue(std::vector<tItemType>& in_vector, tItemType& in_value)
 	{
-		if (vector.x * vector.y == 0) {
-			return vector;
+		int index;
+		for (int i = 0; i < in_vector.size(); i++)
+		{
+			if (in_vector[i] = in_value)
+			{
+				index = i;
+				break;
+			}
 		}
 
-		float vectorMag = sqrt(pow(vector.x, 2) + pow(vector.y, 2));
-		sf::Vector2f normalizedVector(vector.x / vectorMag, vector.y / vectorMag);
+		return in_vector.erase(in_vector.begin() + index);
+	}
 
-		return normalizedVector;
+	//Returns index of first item with given value
+	template<typename tItemType>
+	int GetItemIndex(std::vector<tItemType>& in_vector, tItemType& in_value)
+	{
+		for (int i = 0; i < in_vector.size(); i++)
+		{
+			if (in_vector[i] = in_value)
+			{
+				return i;
+			}
+		}
 	}
 }
