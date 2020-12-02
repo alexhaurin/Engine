@@ -1,86 +1,51 @@
 #include "enemy.h"
 
-Enemy::Enemy(float x, float y, float r)
+Enemy::Enemy(sf::Texture in_texture, float in_radius, sf::Vector2f in_position)
 {
-	if (!texture.loadFromFile("Images/BrickCircle.png")) {
-		std::cout << "Failed to load brick" << std::endl;
-	}
+	texture = in_texture;
 	sprite.setTexture(texture);
-	sprite.setScale(sf::Vector2f(1.0f, 1.0f));
-	sprite.setPosition(x, y);
+	sprite.setPosition(in_position);
 
+	//Sets sprite scale to match given radius when given texture size
+	sprite.setScale(sf::Vector2f((in_radius * 2) / texture.getSize().x, (in_radius * 2) / texture.getSize().x));
+
+	speed = 5.0f;
 	W = texture.getSize().x * sprite.getScale().x;
 	H = texture.getSize().y * sprite.getScale().y;
-	position = GetPosition();
-	speed = 2.0f;
 
 	std::cout << "Enemy created" << std::endl;
 }
-	
+
 Enemy::~Enemy()
 {
 	std::cout << "Enemy destroyed" << std::endl;
 }
 
-void Enemy::Update(sf::Vector2f point)
+void Enemy::Initialize()
 {
-	//Get position of sprite and offset it based on width
-	position = GetPosition();
+	Entity::Initialize();
+}
+
+void Enemy::Destroy()
+{
+	Entity::Destroy();
+}
+
+void Enemy::Update()
+{
+	Entity::Update();
+	//auto game = m_game;
+	//const auto& player = game->GetPlayer();
 
 	//Go to point given at certain speed
+	/*sf::Vector2f point = player.GetPosition();
 	sf::Vector2f vectorToPoint(point.x - position.x, point.y - position.y);
 	sf::Vector2f movement = Normalize(vectorToPoint);
-	sprite.move(movement.x * speed, movement.y * speed);
+
+	Move(movement);*/
 }
 
 void Enemy::Draw(std::shared_ptr<sf::RenderWindow> window)
 {
-	window->draw(sprite);
-}
-
-bool Enemy::CheckBulletCollisions(std::shared_ptr<Bullet> bullet)
-{
-	sf::Vector2f vector(position.x - bullet->GetPosition().x, position.y - bullet->GetPosition().y);
-	float vectorMagnitude = sqrt(pow(vector.x, 2) + pow(vector.y, 2));
-
-	if (vectorMagnitude >= bullet->GetDimensions().x / 2 + W / 2)
-	{
-		return false;
-	}
-	else
-	{
-		std::cout << "hit" << std::endl;
-		return true;
-	}
-}
-
-sf::Vector2f Enemy::Normalize(sf::Vector2f& vector)
-{
-	if (vector.x * vector.y == 0) {
-		return vector;
-	}
-
-	float vectorMag = sqrt(pow(vector.x, 2) + pow(vector.y, 2));
-	sf::Vector2f normalizedVector(vector.x / vectorMag, vector.y / vectorMag);
-
-	return normalizedVector;
-}
-
-sf::Sprite Enemy::GetSprite() const
-{
-	return sprite;
-}
-
-sf::Vector2f Enemy::GetPosition()
-{
-	sf::Vector2f p = sprite.getPosition();
-	p.x += W / 2;
-	p.y += H / 2;
-
-	return p;
-}
-
-sf::Vector2f Enemy::GetDimensions() const
-{
-	return sf::Vector2f(W, H);
+	Entity::Draw(window);
 }
