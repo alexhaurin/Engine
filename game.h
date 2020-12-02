@@ -1,6 +1,7 @@
 #pragma once
 #include "enemy.h"
 #include "player.h"
+#include "Vector.h"
 #include <chrono>
 #include <thread>
 
@@ -28,14 +29,25 @@ public:
 	void Update(double deltaTime);
 	void Draw();
 
-public:
+	std::shared_ptr<Player> GetPlayer() const { return player; }
+	sf::Vector2i GetDimensions() const { return dimensions;  }
+
+private:
 	std::shared_ptr<sf::RenderWindow> window;
 
-	Player player;
+	std::shared_ptr<Entity> root;
+	std::shared_ptr<Player> player;
+
+	std::vector<std::shared_ptr<Entity>> entityList;
 	std::vector<std::shared_ptr<Bullet>> bulletList;
 	std::vector<std::shared_ptr<Enemy>> enemyList;
 	std::vector<std::shared_ptr<Bullet>> bulletDestroyList;
 	std::vector<std::shared_ptr<Enemy>> enemyDestroyList;
+
+	std::vector<int> color{ 0, 255, 0 };
+	sf::Vector2i dimensions;
+	sf::Font robotoFont;
+
 	Input inputState;
 	bool inputBool;
 };
