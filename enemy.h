@@ -1,29 +1,21 @@
 #pragma once
+
 #include "bullet.h"
+#include "Entity.h"
 #include <math.h>
 #include <iostream>
 #include <SFML/Graphics.hpp>
 
-class Enemy {
+class Enemy : public Entity
+{
 public:
-	Enemy(float x, float y, float r);
-	~Enemy();
-	void Update(sf::Vector2f point);
-	void Draw(std::shared_ptr<sf::RenderWindow> window);
-	bool CheckBulletCollisions(std::shared_ptr<Bullet> bullet);
-	sf::Vector2f Normalize(sf::Vector2f& vector);
-	
-	sf::Vector2f GetPosition();
-	sf::Sprite GetSprite() const;
-	sf::Vector2f GetDimensions() const;
+	Enemy(sf::Texture in_texture, float in_scale, sf::Vector2f in_position);
+	~Enemy() override;
+	void Initialize() override;
+	void Destroy() override;
+	void Update() override;
+	void Draw(std::shared_ptr<sf::RenderWindow> window) override;
 
 private:
-	sf::Texture texture;
-	sf::Sprite sprite;
-
-	float W;
-	float H;
-
-	sf::Vector2f position;
-	float speed;
+	//std::shared_ptr<Game> m_game;
 };
