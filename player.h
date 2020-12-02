@@ -1,35 +1,28 @@
 #pragma once
 #include "bullet.h"
 #include "enemy.h"
+#include "Object.h"
+#include "ObjectGuard.h"
 #include <iostream>
 #include <SFML/Graphics.hpp>
 
-class Player
+class Player : public Entity
 {
 public:
-	Player();
-	~Player();
-	void Update();
-	void Draw(std::shared_ptr<sf::RenderWindow> window);
-
-	void Move(sf::Vector2f direction);
-	bool CheckEnemyCollisions(std::vector<std::shared_ptr<Enemy>> enemyList);
+	Player(sf::Texture in_texture, float in_scale, sf::Vector2f in_position);
+	~Player() override;
+	void Initialize() override;
+	void Destroy() override;
+	void Update() override;
+	void Draw(std::shared_ptr<sf::RenderWindow> window) override;
+	
 	std::shared_ptr<Bullet> Shoot();
-	sf::Vector2f Normalize(sf::Vector2f& vector);
 
-	sf::Vector2f GetPosition();
-	float GetSpeed() const;
+	sf::Vector2f GetDirection() const { return direction; }
+	sf::Vector2f GetPastDirection() const { return pastDirection; }
 
 	sf::Vector2f direction;
 
 private:
-	sf::Texture texture;
-	sf::Sprite sprite;
-
-	float W;
-	float H;
-	sf::Vector2f position;
 	sf::Vector2f pastDirection;
-
-	float speed;
 };
