@@ -1,26 +1,22 @@
 #pragma once
+#include "Object.h"
+#include "ObjectGuard.h"
+#include "Entity.h"
 #include <iostream>
 #include <SFML/Graphics.hpp>
 
-class Bullet
+class Bullet : public Entity
 {
 public:
-	Bullet(float x, float y, sf::Vector2f d);
-	~Bullet();
-	void Update();
-	void Draw(std::shared_ptr<sf::RenderWindow> window);
+	Bullet(sf::Vector2f in_position, sf::Vector2f in_dir);
+	~Bullet() override;
+	void Initialize() override;
+	void Destroy() override;
+	void Update() override;
+	void Draw(std::shared_ptr<sf::RenderWindow> window) override;
 
-	sf::Vector2f GetPosition();
-	sf::Vector2f GetDimensions() const;
+	sf::Vector2f GetDirection() const { return direction; }
 
 private:
-	sf::Sprite sprite;
-	sf::Texture texture;
-
-	float W;
-	float H;
-
-	sf::Vector2f position;
-	float speed;
 	sf::Vector2f direction;
 };
