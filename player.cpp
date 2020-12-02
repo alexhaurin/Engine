@@ -1,17 +1,17 @@
 #include "player.h"
 
-Player::Player()
+Player::Player(sf::Texture in_texture, float in_radius, sf::Vector2f in_position)
 {
-	if (!texture.loadFromFile("Images/HooplaCircle.png")) {
-		std::cout << "Failed to load hoopla" << std::endl;
-	}
+	texture = in_texture;
 	sprite.setTexture(texture);
-	sprite.setScale(sf::Vector2f(0.2f, 0.2f));
+	sprite.setPosition(in_position);
+
+	//Sets sprite size to match given radius
+	sprite.setScale(sf::Vector2f((in_radius * 2) / texture.getSize().x, (in_radius * 2) / texture.getSize().x));
 
 	speed = 10.0f;
 	W = texture.getSize().x * sprite.getScale().x;
 	H = texture.getSize().y * sprite.getScale().y;
-	position = GetPosition();
 
 	std::cout << "Player created" << std::endl;
 }
@@ -21,9 +21,20 @@ Player::~Player()
 	std::cout << "Player destroyed" << std::endl;
 }
 
+void Player::Initialize()
+{
+	Entity::Initialize();
+}
+
+void Player::Destroy()
+{
+	Entity::Destroy();
+}
+
 void Player::Update()
 {
-	position = GetPosition();
+	Entity::Update();
+
 	if (direction != sf::Vector2f(0.0f, 0.0f)) {
 		pastDirection = direction;
 	}
@@ -32,58 +43,11 @@ void Player::Update()
 
 void Player::Draw(std::shared_ptr<sf::RenderWindow> window)
 {
-	window->draw(sprite);
+	Entity::Draw(window);
 }
 
-void Player::Move(sf::Vector2f direction)
+std::shared_ptr<Bullet> Player::Shoot()
 {
-	sprite.move(Normalize(direction) * speed);
-}
-
-bool Player::CheckEnemyCollisions(std::vector<std::shared_ptr<Enemy>> enemyList)
-{
-	for (unsigned int i = 0; i < enemyList.size(); i++) {
-		sf::Vector2f vector(position.x - enemyList[i]->GetPosition().x, position.y - enemyList[i]->GetPosition().y);
-		float vectorMagnitude = sqrt(pow(vector.x, 2) + pow(vector.y, 2));
-
-		if (vectorMagnitude >= enemyList[i]->GetDimensions().x/2 + W/2)
-		{
-			return false;
-		}
-		else
-		{
-			return true;
-		}
-	}
-}
-
-std::shared_ptr<Bullet> Player::Shoot() {
-	std::shared_ptr<Bullet> bullet = std::make_shared<Bullet>(position.x, position.y, pastDirection);
+	auto bullet = Object::SpawnRoot<Bullet>(position, pastDirection);
 	return bullet;
-}
-
-sf::Vector2f Player::Normalize(sf::Vector2f& vector)
-{
-	if (vector.x * vector.y == 0) {
-		return vector;
-	}
-
-	float vectorMag = sqrt(pow(vector.x, 2) + pow(vector.y, 2));
-	sf::Vector2f normalizedVector(vector.x / vectorMag, vector.y / vectorMag);
-
-	return normalizedVector;
-}
-
-sf::Vector2f Player::GetPosition()
-{
-	sf::Vector2f p = sprite.getPosition();
-	p.x += W / 2;
-	p.y += H / 2;
-
-	return p;
-}
-
-float Player::GetSpeed() const
-{
-	return speed;
 }
