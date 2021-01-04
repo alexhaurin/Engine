@@ -1,5 +1,4 @@
 #include "enemy.h"
-#include "player.h"
 #include "game.h"
 
 Enemy::Enemy() {
@@ -34,10 +33,10 @@ void Enemy::Update(double in_dt) {
 
 	Entity::Update(in_dt);
 
-	//auto game = m_game;
+	auto game = m_game;
 	auto player = m_game->GetPlayer();
 
-	GoToPoint(sf::Vector2f(100, 100), m_speed * in_dt);
+	GoToPoint(player->GetPosition(), m_speed * in_dt);
 }
 
 void Enemy::Draw(std::shared_ptr<sf::RenderWindow> window) {

@@ -131,8 +131,13 @@ void Game::Update(double in_dt)
 	//Detect Collisions
 	for (auto enemy : m_enemyList) {
 		if (Math::CheckCircleCollisions(enemy->GetPosition(), enemy->GetDimensions().x/2, m_player->GetPosition(), m_player->GetDimensions().x/2)) {
+
+			m_player->SetIsTouchingEnemy(true);
 			m_color[0] = 255;
 			m_color[1] = 0;
+		}
+		else {
+			m_player->SetIsTouchingEnemy(false);
 		}
 	}
 
@@ -207,19 +212,21 @@ void Game::Draw()
 }
 
 std::shared_ptr<Player> Game::CreatePlayer(sf::Texture& in_texture, const sf::Vector2f& in_position) {
-	auto m_player = SpawnWithSetup<Player>(shared_from_this(), [this, in_texture, in_position](Player* in_m_player) {
-		in_m_player->SetTexture(in_texture);
-		in_m_player->SetPosition(in_position);
-		in_m_player->SetDimensions(sf::Vector2f(100.0, 100.0));;
+	auto m_player = SpawnWithSetup<Player>(shared_from_this(), [this, in_texture, in_position](Player* in_player) {
+		in_player->SetGame(shared_from_base<Game>());
+		in_player->SetTexture(in_texture);
+		in_player->SetPosition(in_position);
+		in_player->SetDimensions(sf::Vector2f(100.0, 100.0));;
 	});
 	return m_player;
 }
 
 std::shared_ptr<Enemy> Game::CreateEnemy(sf::Texture& in_texture, const sf::Vector2f in_position) {
-	auto enemy = SpawnWithSetup<Enemy>(shared_from_this(), [this, in_texture, in_position](Enemy* in_m_player) {
-		in_m_player->SetTexture(in_texture);
-		in_m_player->SetPosition(in_position);
-		in_m_player->SetDimensions(sf::Vector2f(100.0, 100.0));;
+	auto enemy = SpawnWithSetup<Enemy>(shared_from_this(), [this, in_texture, in_position](Enemy* in_enemy) {
+		in_enemy->SetGame(shared_from_base<Game>());
+		in_enemy->SetTexture(in_texture);
+		in_enemy->SetPosition(in_position);
+		in_enemy->SetDimensions(sf::Vector2f(100.0, 100.0));;
 	});
 	return enemy;
 }

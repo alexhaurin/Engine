@@ -22,9 +22,13 @@ public:
 	sf::Vector2f GetDirection() const { return m_direction; }
 	sf::Vector2f GetPastDirection() const { return m_pastDirection; }
 
+	void SetIsTouchingEnemy(bool in_isTouching) { isTouchingEnemy = in_isTouching; }
+	bool GetIsTouchingEnemy() { return isTouchingEnemy; }
+
 	sf::Vector2f m_direction;
 
 private:
+	bool isTouchingEnemy;
 	sf::Vector2f m_pastDirection;
 	sf::Texture m_bulletTexture;
 };

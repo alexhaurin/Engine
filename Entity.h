@@ -6,10 +6,12 @@
 #include <iostream>
 #include <SFML/Graphics.hpp>
 
+class Game;
+
 class Entity : public Object {
 public:
 	Entity();
-	virtual ~Entity();
+	~Entity();
 	virtual void Initialize() override;
 	virtual void Destroy() override;
 
@@ -33,6 +35,7 @@ public:
 		sf::Vector2f centerPos(in_pos.x - (m_dimensions.x / 2), in_pos.y - (m_dimensions.y / 2));
 		m_sprite.setPosition(centerPos);
 	}
+	void SetGame(std::shared_ptr<Game>  in_game) { m_game = in_game; }
 
 protected:
 	sf::Vector2f m_position;
@@ -42,5 +45,6 @@ protected:
 
 	sf::Texture m_texture;
 	sf::Sprite m_sprite;
+	std::shared_ptr<Game> m_game;
 private:
 };
