@@ -1,6 +1,7 @@
 #pragma once
 #include "enemy.h"
 #include "player.h"
+#include <time.h>
 #include <chrono>
 #include <thread>
 
@@ -28,12 +29,14 @@ public:
 	void Update(double in_dt);
 	void Draw();
 	
-	std::shared_ptr<Player> CreatePlayer(sf::Texture& in_texture, const sf::Vector2f& in_position);
-	std::shared_ptr<Enemy> CreateEnemy(sf::Texture& in_texture, const sf::Vector2f in_position);
+	std::shared_ptr<Player> CreatePlayer(sf::Texture& in_texture, const sf::Vector2f& in_dimensions, const sf::Vector2f& in_position);
+	std::shared_ptr<Enemy> CreateEnemy(sf::Texture& in_texture, const sf::Vector2f& in_dimensions, const sf::Vector2f& in_position);
+	std::shared_ptr<Bullet> CreateBullet(sf::Texture& in_texture, const sf::Vector2f& in_dimensions, const sf::Vector2f& in_position);
 
 	double GetFramerate() const { return dt; }
-	std::shared_ptr<Player> GetPlayer() const { return m_player; }
 	sf::Vector2f GetDimensions() const { return m_dimensions;  }
+	std::shared_ptr<Player> GetPlayer() const { return m_player; }
+	std::vector<std::shared_ptr<Bullet>> GetBulletList() const { return m_bulletList; }
 
 	void SetFramerate(int in_framerate) { m_targetTime = std::chrono::milliseconds(1000 / in_framerate); }
 	void SetWindowSize(const sf::Vector2u& in_size) { m_window->setSize(in_size); }
