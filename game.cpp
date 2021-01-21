@@ -17,33 +17,44 @@ void Game::Initialize() {
 
 	m_dimensions = sf::Vector2f(1200.0, 800.0);
 	m_window = std::make_shared<sf::RenderWindow>(sf::VideoMode(m_dimensions.x, m_dimensions.y), "Engine2");
+	std::srand(time(NULL));
 
 	//Load
 	if (!robotoFont.loadFromFile("Roboto-Bold.ttf")) {
 		std::cout << "Failed to font" << std::endl;
 	}
 
-	sf::Texture m_playerTexture;
-	if (!m_playerTexture.loadFromFile("Images/HooplaCircle.png")) {
+	sf::Texture playerTexture;
+	if (!playerTexture.loadFromFile("Images/HooplaCircle.png")) {
 		std::cout << "Failed to load hoopla" << std::endl;
 	}
 	sf::Texture enemyTexture;
 	if (!enemyTexture.loadFromFile("Images/BrickCircle.png")) {
 		std::cout << "Failed to load brick" << std::endl;
 	}
+	sf::Texture bulletTexture;
+	if (!bulletTexture.loadFromFile("Images/krabbyPatty.jpg")) {
+		std::cout << "Failed to load burger" << std::endl;
+	}
 
 	//Spawn
-	m_player = CreatePlayer(m_playerTexture, sf::Vector2f(100.0, 100.0));
-	auto enemy1 = CreateEnemy(enemyTexture, sf::Vector2f(200.0, 200.0));
-	auto enemy2 = CreateEnemy(enemyTexture, sf::Vector2f(300.0, 300.0));
+	m_player = CreatePlayer(playerTexture, sf::Vector2f(100.0, 100.0), sf::Vector2f(100.0, 100.0));
+
+	auto enemy1 = CreateEnemy(enemyTexture, sf::Vector2f(100.0, 100.0), sf::Vector2f(200.0, 200.0));
+	m_enemyList.push_back(enemy1);
+
+	for (int i = 0; i < 15; i++) {
+		auto bullet = CreateBullet(bulletTexture, sf::Vector2f(50.0, 50.0), sf::Vector2f(std::rand() % 1000, std::rand() % 600));
+		m_bulletList.push_back(bullet);
+	}
 
 	//Push
-	m_enemyList.push_back(enemy1);
-	m_enemyList.push_back(enemy2);
-
 	m_entityList.push_back(m_player);
 	for (auto enemy : m_enemyList) {
 		m_entityList.push_back(enemy);
+	}
+	for (auto bullet : m_bulletList) {
+		m_entityList.push_back(bullet);
 	}
 }
 
@@ -107,9 +118,6 @@ void Game::Update(double in_dt)
 		entity->Update(in_dt);
 	}
 
-	m_color[0] = 0;
-	m_color[1] = 255;
-
 	//Check if out of screen
 	if (!Math::CheckRectCollisions(m_player->GetPosition(), m_player->GetDimensions(), sf::Vector2f(m_dimensions.x/2, m_dimensions.y/2), m_dimensions)) {
 		//Loop around
@@ -128,32 +136,40 @@ void Game::Update(double in_dt)
 		}
 	}
 
-	//Detect Collisions
+	//Detect Collisions:
+	//Enemies
 	for (auto enemy : m_enemyList) {
-		if (Math::CheckCircleCollisions(enemy->GetPosition(), enemy->GetDimensions().x/2, m_player->GetPosition(), m_player->GetDimensions().x/2)) {
+		//Enemy and player
+		auto playerIsTouching = Math::CheckCircleCollisions(enemy->GetPosition(), enemy->GetDimensions().x / 2, m_player->GetPosition(), m_player->GetDimensions().x / 2); 
+		m_player->SetIsTouchingEnemy(playerIsTouching);
 
-			m_player->SetIsTouchingEnemy(true);
-			m_color[0] = 255;
-			m_color[1] = 0;
-		}
-		else {
-			m_player->SetIsTouchingEnemy(false);
+		//Enemy and bullet
+		for (auto bullet : m_bulletList) {
+			if (bullet->GetState() == eBulletStates::shot && bullet->GetInstigator() != enemy) {
+				if (Math::CheckCircleCollisions(bullet->GetPosition(), bullet->GetDimensions().x / 2, enemy->GetPosition(), enemy->GetDimensions().x / 2)) {
+					enemy->OnBulletHit();
+
+					if (IsValid(&*enemy) && enemy->GetHealth() <= 0) {
+						enemy->Destroy();
+					}
+					if (IsValid(&*bullet)) {
+						bullet->Destroy();
+					}
+				}
+			}
 		}
 	}
 
-	for (auto enemy : m_enemyList) {
-		for (auto bullet : m_bulletList) {
-			if (Math::CheckCircleCollisions(bullet->GetPosition(), bullet->GetDimensions().x/2, enemy->GetPosition(), enemy->GetDimensions().x/2)) {
-				m_color[2] = 200;
-				if (IsValid(&*enemy)) {
-					enemy->Destroy();
-				}
-				if (IsValid(&*bullet)) {
-					bullet->Destroy();
-				}
+	//Player
+	for (auto bullet : m_bulletList) {
+		if (bullet->GetState() == eBulletStates::neutral) {
+			if (Math::CheckCircleCollisions(bullet->GetPosition(), bullet->GetDimensions().x / 2, m_player->GetPosition(), m_player->GetDimensions().x / 2)) {
+				m_player->AddToAmmoList(bullet);
 			}
-			else {
-				m_color[2] = 0;
+		}
+		else if (bullet->GetState() == eBulletStates::shot && bullet->GetInstigator() != m_player) {
+			if (Math::CheckCircleCollisions(bullet->GetPosition(), bullet->GetDimensions().x / 2, m_player->GetPosition(), m_player->GetDimensions().x / 2)) {
+				bullet->Destroy();
 			}
 		}
 	}
@@ -172,9 +188,7 @@ void Game::Update(double in_dt)
 
 	//Inputs
 	if (m_inputState.keySpacePressed) {
-		auto bullet = (m_player->Shoot());
-		m_bulletList.push_back(bullet);
-		m_entityList.push_back(bullet);
+		m_player->Shoot();
 	}
 
 	if (m_inputState.keyUpPressed) {
@@ -211,24 +225,33 @@ void Game::Draw()
 	m_window->display();
 }
 
-std::shared_ptr<Player> Game::CreatePlayer(sf::Texture& in_texture, const sf::Vector2f& in_position) {
-	auto m_player = SpawnWithSetup<Player>(shared_from_this(), [this, in_texture, in_position](Player* in_player) {
+std::shared_ptr<Player> Game::CreatePlayer(sf::Texture& in_texture, const sf::Vector2f& in_dimensions, const sf::Vector2f& in_position) {
+	auto player = SpawnWithSetup<Player>(shared_from_this(), [this, in_texture, in_dimensions, in_position](Player* in_player) {
 		in_player->SetGame(shared_from_base<Game>());
 		in_player->SetTexture(in_texture);
+		in_player->SetDimensions(in_dimensions);
 		in_player->SetPosition(in_position);
-		in_player->SetDimensions(sf::Vector2f(100.0, 100.0));;
 	});
-	return m_player;
+	return player;
 }
 
-std::shared_ptr<Enemy> Game::CreateEnemy(sf::Texture& in_texture, const sf::Vector2f in_position) {
-	auto enemy = SpawnWithSetup<Enemy>(shared_from_this(), [this, in_texture, in_position](Enemy* in_enemy) {
+std::shared_ptr<Enemy> Game::CreateEnemy(sf::Texture& in_texture, const sf::Vector2f& in_dimensions, const sf::Vector2f& in_position) {
+	auto enemy = SpawnWithSetup<Enemy>(shared_from_this(), [this, in_texture, in_dimensions, in_position](Enemy* in_enemy) {
 		in_enemy->SetGame(shared_from_base<Game>());
 		in_enemy->SetTexture(in_texture);
+		in_enemy->SetDimensions(in_dimensions);
 		in_enemy->SetPosition(in_position);
-		in_enemy->SetDimensions(sf::Vector2f(100.0, 100.0));;
 	});
 	return enemy;
+}
+
+std::shared_ptr<Bullet> Game::CreateBullet(sf::Texture& in_texture, const sf::Vector2f& in_dimensions, const sf::Vector2f& in_position) {
+	auto bullet = SpawnWithSetup<Bullet>(shared_from_this(), [this, in_texture, in_dimensions, in_position](Bullet* in_bullet) {
+		in_bullet->SetTexture(in_texture);
+		in_bullet->SetPosition(in_position);
+		in_bullet->SetDimensions(in_dimensions);
+	});
+	return bullet;
 }
 
 ////////////////////Input Class///////////////////

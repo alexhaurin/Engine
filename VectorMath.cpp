@@ -25,10 +25,13 @@ int Vector::GetItemIndex(std::vector<tItemType>& in_vector, tItemType& in_value)
 	}
 }
 
-
 ////////////////////////////// Math //////////////////////////////////
 float Math::GetMagnitude(sf::Vector2f& vector) {
 	return sqrt(pow(vector.x, 2) + pow(vector.y, 2));
+}
+
+sf::Vector2f Math::GetDirection(const sf::Vector2f& pos1, const sf::Vector2f& pos2) {
+	return sf::Vector2f(pos2.x - pos1.x, pos2.y - pos1.y);
 }
 
 float Math::GetDot(sf::Vector2f& vect1, sf::Vector2f& vect2) {

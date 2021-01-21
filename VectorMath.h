@@ -15,12 +15,10 @@ namespace Vector {
 
 namespace Math {
 	float GetMagnitude(sf::Vector2f& vector);
-
+	sf::Vector2f GetDirection(const sf::Vector2f& pos1, const sf::Vector2f& pos2);
 	float GetDot(sf::Vector2f& vect1, sf::Vector2f& vect2);
-
 	sf::Vector2f Normalize(sf::Vector2f& vector);
 
 	bool CheckCircleCollisions(const sf::Vector2f& pos1, const float& radius1, const sf::Vector2f& pos2, const float& radius2);
-
 	bool CheckRectCollisions(const sf::Vector2f& pos1, const sf::Vector2f& dim1, const sf::Vector2f& pos2, const sf::Vector2f& dim2);
 }
