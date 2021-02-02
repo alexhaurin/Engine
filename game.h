@@ -17,6 +17,11 @@ public:
 	bool keySpacePressed = false;
 };
 
+class Window {
+	Window(sf::Vector2f in_dim, const char* in_name);
+	~Window();
+};
+
 class Game : public Object {
 public:
 	Game();
@@ -37,18 +42,20 @@ public:
 	sf::Vector2f GetDimensions() const { return m_dimensions;  }
 	std::shared_ptr<Player> GetPlayer() const { return m_player; }
 	std::vector<std::shared_ptr<Bullet>> GetBulletList() const { return m_bulletList; }
+	std::vector<std::shared_ptr<Bullet>> GetNeutralBulletList() const { return m_neutralBulletList; }
 
 	void SetFramerate(int in_framerate) { m_targetTime = std::chrono::milliseconds(1000 / in_framerate); }
 	void SetWindowSize(const sf::Vector2u& in_size) { m_window->setSize(in_size); }
 private:
 	std::shared_ptr<sf::RenderWindow> m_window;
+	std::shared_ptr<sf::View> m_camera;
 	std::chrono::milliseconds m_targetTime;
 	double dt = 1.0;
 
 	std::shared_ptr<Player> m_player;
-
 	std::vector<std::shared_ptr<Entity>> m_entityList;
 	std::vector<std::shared_ptr<Bullet>> m_bulletList;
+	std::vector<std::shared_ptr<Bullet>> m_neutralBulletList;
 	std::vector<std::shared_ptr<Enemy>> m_enemyList;
 	std::vector<std::shared_ptr<Bullet>> m_bulletDestroyList;
 	std::vector<std::shared_ptr<Enemy>> m_enemyDestroyList;

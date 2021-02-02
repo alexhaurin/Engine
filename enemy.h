@@ -21,10 +21,8 @@ public:
 	void Draw(std::shared_ptr<sf::RenderWindow> window) override;
 	void OnBulletHit(std::shared_ptr<Bullet> in_bullet) override;
 	void Shoot();
-	
-	void StateLogic(const double in_dt);
-	void SetStateTo(eEnemyStates in_state);
 
+	void SetStateTo(eEnemyStates in_state);
 	void StartWander();
 	void Wander(const double in_dt);
 	void ExitWander();
@@ -49,13 +47,15 @@ private:
 	eEnemyStates m_state;
 	std::vector<std::shared_ptr<Bullet>> m_ammoList;
 
+	float m_pursueDistance = 300;
+
 	std::chrono::time_point<std::chrono::steady_clock> m_timerStart;
 	sf::Vector2f m_wanderPoint;
 	float m_wanderIdleTime;
 
-	sf::Vector2f center;
-	float angle;
-	float rotRadius;
+	sf::Vector2f m_rotCenter;
+	float m_rotAngle;
+	float m_rotRadius;
 
 	float m_stunTime;
 };

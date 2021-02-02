@@ -30,6 +30,10 @@ float Math::GetMagnitude(sf::Vector2f& vector) {
 	return sqrt(pow(vector.x, 2) + pow(vector.y, 2));
 }
 
+float Math::GetDistance(const sf::Vector2f& in_pos1, const sf::Vector2f& in_pos2) {
+	return sqrt(pow(in_pos1.x - in_pos2.x, 2) + pow(in_pos1.y - in_pos2.y, 2));
+}
+
 sf::Vector2f Math::GetDirection(const sf::Vector2f& pos1, const sf::Vector2f& pos2) {
 	return sf::Vector2f(pos2.x - pos1.x, pos2.y - pos1.y);
 }

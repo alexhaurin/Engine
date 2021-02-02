@@ -17,6 +17,8 @@ public:
 	void Draw(std::shared_ptr<sf::RenderWindow> window) override;
 	
 	void Shoot();
+	void AddToAmmoList(std::shared_ptr<Bullet> in_bullet);
+	void OnBulletHit(std::shared_ptr<Bullet> in_bullet);
 
 	bool GetIsTouchingEnemy() { return isTouchingEnemy; }
 	sf::Vector2f GetDirection() const { return m_direction; }
@@ -24,7 +26,6 @@ public:
 	std::vector<std::shared_ptr<Bullet>> GetAmmoList() const { return m_ammoList; }
 
 	void SetIsTouchingEnemy(bool in_isTouching) { isTouchingEnemy = in_isTouching; }
-	void AddToAmmoList(std::shared_ptr<Bullet> in_bullet);
 
 	sf::Vector2f m_direction;
 

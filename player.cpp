@@ -59,3 +59,17 @@ void Player::AddToAmmoList(std::shared_ptr<Bullet> in_bullet) {
 		m_ammoList.push_back(in_bullet);
 	}
 }
+
+void Player::OnBulletHit(std::shared_ptr<Bullet> in_bullet) {
+	switch (in_bullet->GetState()) {
+	case (eBulletStates::neutral):
+		AddToAmmoList(in_bullet);
+		break;
+	case (eBulletStates::shot):
+		std::cout << "Player shot" << std::endl;
+		if (IsValid(&*in_bullet)) { in_bullet->Destroy(); }
+		break;
+	default:
+		break;
+	}
+}

@@ -77,8 +77,14 @@ void Enemy::Draw(std::shared_ptr<sf::RenderWindow> window) {
 
 void Enemy::OnBulletHit(std::shared_ptr<Bullet> in_bullet) {
 	SetStateTo(eEnemyStates::stun);
-	SetDimensions(sf::Vector2f(m_dimensions.x + 10, m_dimensions.y + 10));
 	m_health -= 10;
+
+	if (IsValid(&*shared_from_base<Enemy>()) && m_health <= 0) {
+		Destroy();
+	}
+	if (IsValid(&*in_bullet)) {
+		in_bullet->Destroy();
+	}
 }
 
 void Enemy::Shoot() {
@@ -97,18 +103,6 @@ void Enemy::Shoot() {
 }
 
 ///////////////////////////////// State Machine //////////////////////////////////////////////
-
-void Enemy::StateLogic(const double in_dt) {
-	switch (m_state) {
-	case eEnemyStates::wander:
-		Wander(in_dt);
-		break;
-	case eEnemyStates::stun:
-		break;
-	case eEnemyStates::pursue:
-		break;
-	}
-}
 
 void Enemy::SetStateTo(eEnemyStates in_state) {
 
@@ -178,9 +172,9 @@ void Enemy::StartStun() {
 	m_timerStart = std::chrono::steady_clock::now();
 	m_stunTime = std::rand() % 1000 + 3000;
 
-	angle = 50;
-	rotRadius = 10.0;
-	center = m_position;
+	m_rotAngle = 50;
+	m_rotRadius = 10.0;
+	m_rotCenter = m_position;
 
 	Stun(m_game->GetFramerate());
 }
@@ -190,14 +184,11 @@ void Enemy::Stun(const double in_dt) {
 	auto timePassed = std::chrono::duration<float, std::milli>(std::chrono::steady_clock::now() - m_timerStart).count();
 	
 	//Problem with getting posY, increases too much
-	auto posX = center.x + cos(angle * (3.14 / 180.0)) * rotRadius;
-	auto posY = center.x + sin(angle * (3.14 / 180.0)) * rotRadius;
-
-	angle += 0.2 * in_dt;
-	if (angle > 360.0) { angle = 0.0; }
+	auto posX = m_rotCenter.x + cos(m_rotAngle * (3.14 / 180.0)) * m_rotRadius;
+	auto posY = m_rotCenter.x + sin(m_rotAngle * (3.14 / 180.0)) * m_rotRadius;
+	m_rotAngle += 0.2 * in_dt;
 
 	SetPosition(sf::Vector2f(posX, posY));
-
 
 	if (timePassed >= m_stunTime) {
 		ExitStun();
@@ -219,7 +210,7 @@ void Enemy::StartAttack() {
 void Enemy::Attack(const double in_dt) {
 
 	auto distance = sf::Vector2f(m_game->GetPlayer()->GetPosition().x - m_position.x, m_game->GetPlayer()->GetPosition().y - m_position.y);
-	if (Math::GetMagnitude(distance) > 100) {
+	if (Math::GetMagnitude(distance) <= m_pursueDistance) {
 		SetStateTo(eEnemyStates::pursue);
 		return;
 	}
@@ -256,12 +247,14 @@ void Enemy::Attack(const double in_dt) {
 }
 
 void Enemy::ExitAttack() {
+	Shoot();
+
 	m_speed = m_constSpeed;
 }
 
 void Enemy::StartPursue() {
 	m_state = eEnemyStates::pursue;
-	m_speed = 0.2f;
+	m_speed = std::min(1.0f, m_constSpeed + (3 / m_health));
 
 	Pursue(m_game->GetFramerate());
 }
@@ -269,7 +262,7 @@ void Enemy::StartPursue() {
 void Enemy::Pursue(const double in_dt) {
 
 	auto distance = sf::Vector2f(m_game->GetPlayer()->GetPosition().x - m_position.x, m_game->GetPlayer()->GetPosition().y - m_position.y);
-	if (Math::GetMagnitude(distance) < 100) {
+	if (Math::GetMagnitude(distance) > m_pursueDistance && !m_game->GetNeutralBulletList().empty()) {
 		SetStateTo(eEnemyStates::attack);
 		return;
 	}

@@ -15,8 +15,11 @@ void Game::Initialize() {
 	
 	Object::Initialize();
 
-	m_dimensions = sf::Vector2f(1200.0, 800.0);
+	m_dimensions = sf::Vector2f(1500.0, 1200.0);
 	m_window = std::make_shared<sf::RenderWindow>(sf::VideoMode(m_dimensions.x, m_dimensions.y), "Engine2");
+	m_camera = std::make_shared<sf::View>(sf::Vector2f(m_dimensions.x/2, m_dimensions.y/2),	sf::Vector2f(m_dimensions.x, m_dimensions.y));
+	m_window->setView(*m_camera);
+	m_camera->setCenter(sf::Vector2f(m_dimensions.x / 2, m_dimensions.y / 2));
 	std::srand(time(NULL));
 
 	//Load
@@ -33,19 +36,22 @@ void Game::Initialize() {
 		std::cout << "Failed to load brick" << std::endl;
 	}
 	sf::Texture bulletTexture;
-	if (!bulletTexture.loadFromFile("Images/krabbyPatty.jpg")) {
+	if (!bulletTexture.loadFromFile("Images/krabbyPatty.png")) {
 		std::cout << "Failed to load burger" << std::endl;
 	}
 
 	//Spawn
 	m_player = CreatePlayer(playerTexture, sf::Vector2f(100.0, 100.0), sf::Vector2f(100.0, 100.0));
 
-	auto enemy1 = CreateEnemy(enemyTexture, sf::Vector2f(100.0, 100.0), sf::Vector2f(200.0, 200.0));
-	m_enemyList.push_back(enemy1);
+	for (int i = 0; i < 1; i++) {
+		auto enemy1 = CreateEnemy(enemyTexture, sf::Vector2f(100.0, 100.0), sf::Vector2f(200.0, 200.0));
+		m_enemyList.push_back(enemy1);
+	}
 
 	for (int i = 0; i < 15; i++) {
-		auto bullet = CreateBullet(bulletTexture, sf::Vector2f(50.0, 50.0), sf::Vector2f(std::rand() % 1000, std::rand() % 600));
+		auto bullet = CreateBullet(bulletTexture, sf::Vector2f(50.0, 50.0), sf::Vector2f(std::rand() % (int)m_dimensions.x, std::rand() % (int)m_dimensions.y));
 		m_bulletList.push_back(bullet);
+		m_neutralBulletList.push_back(bullet);
 	}
 
 	//Push
@@ -100,7 +106,7 @@ void Game::HandleEvents() {
 			m_window->close();
 			Destroy();
 			break;
-		case sf::Event::Resized:	
+		case sf::Event::Resized:
 			break;
 		case sf::Event::KeyPressed:
 			m_inputBool = true;
@@ -117,6 +123,7 @@ void Game::Update(double in_dt)
 	for (auto entity : m_entityList) {
 		entity->Update(in_dt);
 	}
+	m_camera->setCenter(m_player->GetPosition());
 
 	//Check if out of screen
 	if (!Math::CheckRectCollisions(m_player->GetPosition(), m_player->GetDimensions(), sf::Vector2f(m_dimensions.x/2, m_dimensions.y/2), m_dimensions)) {
@@ -147,14 +154,7 @@ void Game::Update(double in_dt)
 		for (auto bullet : m_bulletList) {
 			if (bullet->GetState() == eBulletStates::shot && bullet->GetInstigator() != enemy) {
 				if (Math::CheckCircleCollisions(bullet->GetPosition(), bullet->GetDimensions().x / 2, enemy->GetPosition(), enemy->GetDimensions().x / 2)) {
-					enemy->OnBulletHit();
-
-					if (IsValid(&*enemy) && enemy->GetHealth() <= 0) {
-						enemy->Destroy();
-					}
-					if (IsValid(&*bullet)) {
-						bullet->Destroy();
-					}
+					enemy->OnBulletHit(bullet);
 				}
 			}
 		}
@@ -162,17 +162,17 @@ void Game::Update(double in_dt)
 
 	//Player
 	for (auto bullet : m_bulletList) {
-		if (bullet->GetState() == eBulletStates::neutral) {
+		if (bullet->GetState() != eBulletStates::active && bullet->GetInstigator() != m_player) {
 			if (Math::CheckCircleCollisions(bullet->GetPosition(), bullet->GetDimensions().x / 2, m_player->GetPosition(), m_player->GetDimensions().x / 2)) {
-				m_player->AddToAmmoList(bullet);
+				m_player->OnBulletHit(bullet);
 			}
 		}
-		else if (bullet->GetState() == eBulletStates::shot && bullet->GetInstigator() != m_player) {
-			if (Math::CheckCircleCollisions(bullet->GetPosition(), bullet->GetDimensions().x / 2, m_player->GetPosition(), m_player->GetDimensions().x / 2)) {
-				bullet->Destroy();
-			}
+
+		if (bullet->GetState() != eBulletStates::neutral) {
+			m_neutralBulletList.erase(std::remove(m_neutralBulletList.begin(), m_neutralBulletList.end(), bullet), m_neutralBulletList.end());
 		}
 	}
+	
 
 	//Destroy Invalid Entitys
 	auto EraseInvalid = [](auto& entityList) {
@@ -184,6 +184,7 @@ void Game::Update(double in_dt)
 	EraseInvalid(m_entityList);
 	EraseInvalid(m_enemyList);
 	EraseInvalid(m_bulletList);
+	EraseInvalid(m_neutralBulletList);
 	
 
 	//Inputs

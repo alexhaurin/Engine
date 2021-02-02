@@ -15,6 +15,7 @@ namespace Vector {
 
 namespace Math {
 	float GetMagnitude(sf::Vector2f& vector);
+	float GetDistance(const sf::Vector2f& in_pos1, const sf::Vector2f& in_pos2);
 	sf::Vector2f GetDirection(const sf::Vector2f& pos1, const sf::Vector2f& pos2);
 	float GetDot(sf::Vector2f& vect1, sf::Vector2f& vect2);
 	sf::Vector2f Normalize(sf::Vector2f& vector);
